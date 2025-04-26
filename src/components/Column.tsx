@@ -4,7 +4,7 @@ import { Box, Typography, IconButton, TextField } from '@mui/material';
 import { Edit, Delete } from '@mui/icons-material';
 import TaskCard from './TaskCard';
 import TaskForm from './TaskForm';
-import {Column, Tag, Task} from '../types';
+import { Column, Tag, Task } from '../types';
 
 interface ColumnProps {
   boardId: string;
@@ -17,6 +17,17 @@ interface ColumnProps {
   onDeleteTask: (boardId: string, taskId: string) => void;
   dragHandleProps?: any;
 }
+
+// Стили для области дропа задач
+const getTaskListStyle = (isDraggingOver: boolean) => ({
+  minHeight: '100px',
+  padding: '8px',
+  backgroundColor: isDraggingOver ? 'rgba(0, 0, 0, 0.05)' : 'transparent',
+  borderRadius: '4px',
+  transition: 'background-color 0.2s ease',
+  flexGrow: 1,
+  overflow: 'hidden'
+});
 
 const ColumnT: React.FC<ColumnProps> = ({
   boardId,
@@ -40,8 +51,26 @@ const ColumnT: React.FC<ColumnProps> = ({
   };
 
   return (
-    <Box sx={{ backgroundColor: '#f5f5f5', borderRadius: '8px', p: 2, width: '300px' }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }} {...dragHandleProps}>
+    <div 
+      style={{ 
+        height: '100%', 
+        display: 'flex', 
+        flexDirection: 'column',
+        backgroundColor: '#f5f5f5',
+        borderRadius: '8px',
+      }}
+    >
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          mb: 2,
+          p: 2,
+          cursor: 'grab',
+          '&:active': { cursor: 'grabbing' }
+        }} 
+        {...dragHandleProps}
+      >
         {isEditing ? (
           <TextField
             value={columnTitle}
@@ -51,24 +80,33 @@ const ColumnT: React.FC<ColumnProps> = ({
             fullWidth
           />
         ) : (
-          <Typography variant="h6">{column.title}</Typography>
+          <Typography variant="h6" sx={{ flexGrow: 1 }}>{column.title}</Typography>
         )}
-        <IconButton onClick={() => setIsEditing(true)}>
+        <IconButton onClick={(e) => {
+          e.stopPropagation();
+          setIsEditing(true);
+        }} size="small">
           <Edit />
         </IconButton>
-        <IconButton onClick={() => onDeleteColumn(boardId, column.id)}>
+        <IconButton onClick={(e) => {
+          e.stopPropagation();
+          onDeleteColumn(boardId, column.id);
+        }} size="small">
           <Delete />
         </IconButton>
       </Box>
-      <TaskForm
-        onSubmit={(task) => onAddTask(boardId, column.id, task)}
-      />
+      <Box sx={{ px: 2 }}>
+        <TaskForm
+          onSubmit={(task) => onAddTask(boardId, column.id, task)}
+        />
+      </Box>
       <Droppable droppableId={column.id} type="task">
-        {(provided) => (
-          <Box
+        {(provided, snapshot) => (
+          <div
             ref={provided.innerRef}
             {...provided.droppableProps}
-            sx={{ minHeight: '100px' }}
+            style={getTaskListStyle(snapshot.isDraggingOver)}
+            className={snapshot.isDraggingOver ? 'droppable-active' : ''}
           >
             {tasks.map((task, index) => (
               <TaskCard
@@ -77,13 +115,14 @@ const ColumnT: React.FC<ColumnProps> = ({
                 index={index}
                 onEditTask={(updates) => onEditTask(boardId, task.id, updates)}
                 onDeleteTask={() => onDeleteTask(boardId, task.id)}
+                columnId={column.id}
               />
             ))}
             {provided.placeholder}
-          </Box>
+          </div>
         )}
       </Droppable>
-    </Box>
+    </div>
   );
 };
 

@@ -6,7 +6,7 @@ import BoardView from './components/BoardView';
 import { Board, Task, Tag } from './types';
 
 const App: React.FC = () => {
-  const [boards, setBoards] = useState<Board[]>([]);
+  const [boards, setBoards] = useState<Board[]>([]); // Fixed: Initialize with empty array
   const [activeBoardId, setActiveBoardId] = useState<string | null>(null);
   
   useEffect(() => {
@@ -167,54 +167,105 @@ const App: React.FC = () => {
   
   const handleDragEnd = (boardId: string, result: DropResult) => {
     const { source, destination, draggableId, type } = result;
-    if (!destination) return;
     
+    // Если нет места назначения, ничего не делаем
+    if (!destination) {
+      console.log('No destination');
+      return;
+    }
+    
+    // Если источник и назначение одинаковы, ничего не делаем
+    if (
+      destination.droppableId === source.droppableId &&
+      destination.index === source.index
+    ) {
+      console.log('Dropped in the same position');
+      return;
+    }
+    
+    // Если перетаскиваем колонку
     if (type === 'column') {
-      if (source.index === destination.index) return;
-      setBoards(boards.map((board) =>
-        board.id === boardId
-          ? {
-            ...board,
-            columnOrder: (() => {
-              const newOrder = [...board.columnOrder];
-              newOrder.splice(source.index, 1);
-              newOrder.splice(destination.index, 0, draggableId);
-              return newOrder;
-            })(),
-          }
-          : board
-      ));
-    } else if (type === 'task') {
-      const sourceColumnId = source.droppableId;
-      const destColumnId = destination.droppableId;
+      console.log('Reordering column');
+      const board = boards.find(b => b.id === boardId);
+      if (!board) return;
       
-      setBoards(boards.map((board) =>
-        board.id === boardId
+      const newColumnOrder = Array.from(board.columnOrder);
+      newColumnOrder.splice(source.index, 1);
+      newColumnOrder.splice(destination.index, 0, draggableId);
+      
+      const updatedBoards = boards.map(b => 
+        b.id === boardId 
+          ? { ...b, columnOrder: newColumnOrder } 
+          : b
+      );
+      
+      console.log('New order:', newColumnOrder);
+      setBoards(updatedBoards);
+      return;
+    }
+    
+    // Перетаскивание задачи
+    const sourceColumnId = source.droppableId;
+    const destinationColumnId = destination.droppableId;
+    
+    const board = boards.find(b => b.id === boardId);
+    if (!board) return;
+    
+    // Если задача перемещается в той же колонке
+    if (sourceColumnId === destinationColumnId) {
+      const column = board.columns[sourceColumnId];
+      const newTaskIds = Array.from(column.taskIds);
+      newTaskIds.splice(source.index, 1);
+      newTaskIds.splice(destination.index, 0, draggableId);
+      
+      const updatedBoards = boards.map(b => 
+        b.id === boardId
           ? {
-            ...board,
-            columns: {
-              ...board.columns,
-              [sourceColumnId]: {
-                ...board.columns[sourceColumnId],
-                taskIds: (() => {
-                  const newTaskIds = [...board.columns[sourceColumnId].taskIds];
-                  newTaskIds.splice(source.index, 1);
-                  return newTaskIds;
-                })(),
+              ...b,
+              columns: {
+                ...b.columns,
+                [sourceColumnId]: {
+                  ...b.columns[sourceColumnId],
+                  taskIds: newTaskIds,
+                },
               },
-              [destColumnId]: {
-                ...board.columns[destColumnId],
-                taskIds: (() => {
-                  const newTaskIds = [...board.columns[destColumnId].taskIds];
-                  newTaskIds.splice(destination.index, 0, draggableId);
-                  return newTaskIds;
-                })(),
+            }
+          : b
+      );
+      
+      setBoards(updatedBoards);
+      return;
+    }
+    
+    // Перемещение задачи между колонками
+    const sourceColumn = board.columns[sourceColumnId];
+    const destinationColumn = board.columns[destinationColumnId];
+    const sourceTaskIds = Array.from(sourceColumn.taskIds);
+    const destinationTaskIds = Array.from(destinationColumn.taskIds);
+    
+    sourceTaskIds.splice(source.index, 1);
+    destinationTaskIds.splice(destination.index, 0, draggableId);
+    
+    const updatedBoards = boards.map(b => 
+      b.id === boardId
+        ? {
+            ...b,
+            columns: {
+              ...b.columns,
+              [sourceColumnId]: {
+                ...b.columns[sourceColumnId],
+                taskIds: sourceTaskIds,
+              },
+              [destinationColumnId]: {
+                ...b.columns[destinationColumnId],
+                taskIds: destinationTaskIds,
               },
             },
           }
-          : board
-      ));
-    }
+        : b
+    );
+    
+    setBoards(updatedBoards);
   };
   
   const activeBoard = boards.find((board) => board.id === activeBoardId);
@@ -231,6 +282,7 @@ const App: React.FC = () => {
           onEditTask={editTask}
           onDeleteTask={deleteTask}
           onDragEnd={handleDragEnd}
+          onBack={() => setActiveBoardId(null)}
         />
       ) : (
         <BoardList

@@ -36,7 +36,7 @@ const BoardList: React.FC<BoardListProps> = ({ boards, onSelectBoard, onAddBoard
   };
 
   return (
-    <div style={{ padding: '20px', maxWidth: '400px', margin: '0 auto' }}>
+    <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto', width: '100%' }}>
       <Typography variant="h4" gutterBottom>Boards</Typography>
       <TextField
         label="New Board Name"
@@ -45,18 +45,23 @@ const BoardList: React.FC<BoardListProps> = ({ boards, onSelectBoard, onAddBoard
         fullWidth
         margin="normal"
       />
-      <Button variant="contained" onClick={handleAddBoard} fullWidth>
+      <Button variant="contained" onClick={handleAddBoard} fullWidth sx={{ mb: 2 }}>
         Add Board
       </Button>
       <List>
         {boards.map((board) => (
-          <ListItem key={board.id} onClick={() => onSelectBoard(board.id)}>
+          <ListItem
+            key={board.id}
+            onClick={() => onSelectBoard(board.id)}
+            sx={{ bgcolor: 'background.paper', borderRadius: 1, mb: 1 }}
+          >
             {editingBoard === board.id ? (
               <TextField
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
                 onBlur={() => handleEditBoard(board.id)}
                 autoFocus
+                fullWidth
               />
             ) : (
               <ListItemText primary={board.name} />
