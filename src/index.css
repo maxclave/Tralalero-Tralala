@@ -80,7 +80,7 @@ body.dragging {
 	}
 	
 	.MuiBox-root {
-		width: 100% !important;
+		/*width: 100% !important;*/
 		min-width: unset !important;
 		max-width: unset !important;
 	}
@@ -90,7 +90,7 @@ body.dragging {
 	}
 	
 	.MuiButton-root {
-		width: 100% !important;
+		/*width: 100% !important;*/
 		margin-bottom: 8px !important;
 	}
 }

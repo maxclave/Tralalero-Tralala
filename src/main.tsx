@@ -4,7 +4,6 @@ import App from './App';
 import {createTheme, CssBaseline, ThemeProvider} from '@mui/material';
 import './index.css';
 
-// Полифил для HTML5 backend и исправление проблем с ResizeObserver
 if (typeof window !== 'undefined') {
 	window.addEventListener('error', (event) => {
 		if (event?.message?.includes('ResizeObserver') || event?.error?.message?.includes('ResizeObserver')) {

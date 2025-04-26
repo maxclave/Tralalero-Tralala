@@ -19,23 +19,18 @@ interface BoardViewProps {
 	}) => void;
 	onDeleteTask: (boardId: string, taskId: string) => void;
 	onDragEnd: (boardId: string, result: DropResult) => void;
-	onBack: () => void; // Add new prop for back navigation
+	onBack: () => void;
 }
 
-// Преобразуем массив в объект для оптимизации поиска
 const getItemStyle = (isDragging: boolean, draggableStyle: any) => ({
-	// Базовые стили для карточки
 	padding: '16px',
 	margin: '0 0 16px 0',
 	width: '300px',
 	borderRadius: '8px',
-	// Важные стили для предотвращения исчезновения
 	visibility: isDragging ? 'visible' : undefined,
 	userSelect: 'none',
-	// Визуальные эффекты при перетаскивании
 	backgroundColor: '#f5f5f5',
 	boxShadow: isDragging ? '0 5px 15px rgba(0,0,0,0.2)' : '0 1px 3px rgba(0,0,0,0.12)',
-	// Слияние со стилями, предоставляемыми библиотекой
 	...draggableStyle,
 });
 
@@ -54,7 +49,6 @@ const BoardView: React.FC<BoardViewProps> = ({
 	const [isDragging, setIsDragging] = useState(false);
 	
 	useEffect(() => {
-		// Удаляем класс при размонтировании компонента
 		return () => {
 			document.body.classList.remove('dragging');
 		};
@@ -75,10 +69,8 @@ const BoardView: React.FC<BoardViewProps> = ({
 		onDragEnd(board.id, result);
 	};
 	
-	// Обработчик начала перетаскивания
 	const handleDragStart = (initial: any) => {
 		console.log('Dragging started:', initial);
-		// Добавляем класс при начале перетаскивания
 		document.body.classList.add('dragging');
 		setIsDragging(true);
 	};
@@ -90,9 +82,15 @@ const BoardView: React.FC<BoardViewProps> = ({
 					variant="outlined"
 					startIcon={<ArrowBack/>}
 					onClick={onBack}
-					sx={{mr: 2}}
-				>
-					Back to Boards
+					sx={{mr: 2}}>
+					<Box sx={{
+						display: {xs: 'none', sm: 'flex'},
+						'@media (min-width: 600px)': {
+							display: 'flex',
+						}
+					}}>
+						Back to Boards
+					</Box>
 				</Button>
 				<Typography variant="h4">{board.name}</Typography>
 			</Box>

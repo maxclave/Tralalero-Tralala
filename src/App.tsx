@@ -6,7 +6,7 @@ import BoardView from './components/BoardView';
 import {Board, Tag, Task} from './types';
 
 const App: React.FC = () => {
-	const [boards, setBoards] = useState<Board[]>([]); // Fixed: Initialize with empty array
+	const [boards, setBoards] = useState<Board[]>([]);
 	const [activeBoardId, setActiveBoardId] = useState<string | null>(null);
 	
 	useEffect(() => {
@@ -168,13 +168,11 @@ const App: React.FC = () => {
 	const handleDragEnd = (boardId: string, result: DropResult) => {
 		const {source, destination, draggableId, type} = result;
 		
-		// Если нет места назначения, ничего не делаем
 		if (!destination) {
 			console.log('No destination');
 			return;
 		}
 		
-		// Если источник и назначение одинаковы, ничего не делаем
 		if (
 			destination.droppableId === source.droppableId &&
 			destination.index === source.index
@@ -183,7 +181,6 @@ const App: React.FC = () => {
 			return;
 		}
 		
-		// Если перетаскиваем колонку
 		if (type === 'column') {
 			console.log('Reordering column');
 			const board = boards.find(b => b.id === boardId);
@@ -204,14 +201,12 @@ const App: React.FC = () => {
 			return;
 		}
 		
-		// Перетаскивание задачи
 		const sourceColumnId = source.droppableId;
 		const destinationColumnId = destination.droppableId;
 		
 		const board = boards.find(b => b.id === boardId);
 		if (!board) return;
 		
-		// Если задача перемещается в той же колонке
 		if (sourceColumnId === destinationColumnId) {
 			const column = board.columns[sourceColumnId];
 			const newTaskIds = Array.from(column.taskIds);
@@ -237,7 +232,6 @@ const App: React.FC = () => {
 			return;
 		}
 		
-		// Перемещение задачи между колонками
 		const sourceColumn = board.columns[sourceColumnId];
 		const destinationColumn = board.columns[destinationColumnId];
 		const sourceTaskIds = Array.from(sourceColumn.taskIds);

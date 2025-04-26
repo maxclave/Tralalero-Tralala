@@ -93,7 +93,7 @@ const TaskCard: React.FC<TaskCardProps> = ({task, index, onEditTask, onDeleteTas
 								>
 									{task.title}
 								</Typography>
-								<Box sx={{display: 'flex', ml: 1}}>
+								<Box sx={{display: 'flex', justifyContent: 'flex-end', ml: 1}}>
 									<IconButton size="small" onClick={() => setIsEditing(true)}>
 										<Edit fontSize="small"/>
 									</IconButton>
